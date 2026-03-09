@@ -19,9 +19,9 @@ if st.button("🚀 Update Dashboard"):
         try:
             genai.configure(api_key=gem_key)
             
-            # This is the special fix for the error you saw:
+            # UPDATED: Using the 2.0-flash model which supports 'google_search_retrieval'
             model = genai.GenerativeModel(
-                model_name='gemini-1.5-flash',
+                model_name='gemini-2.0-flash',
                 tools=[{'google_search_retrieval': {}}]
             )
             
