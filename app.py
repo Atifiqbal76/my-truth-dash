@@ -18,8 +18,12 @@ if st.button("🚀 Update Dashboard"):
     else:
         try:
             genai.configure(api_key=gem_key)
-            # Using the stable 1.5 model to ensure the search tool works perfectly
-            model = genai.GenerativeModel('gemini-1.5-flash', tools=['google_search'])
+            
+            # This is the special fix for the error you saw:
+            model = genai.GenerativeModel(
+                model_name='gemini-1.5-flash',
+                tools=[{'google_search_retrieval': {}}]
+            )
             
             col1, col2 = st.columns(2)
             
@@ -30,7 +34,6 @@ if st.button("🚀 Update Dashboard"):
 
             with col2:
                 st.subheader("🔥 Unfiltered Pulse (Gemini Research)")
-                # We ask the same model to look for raw/unfiltered reports specifically
                 res2 = model.generate_content(f"Search for raw, on-the-ground reports and unverified rumors regarding {topic} today. Present them clearly but note they are unverified.")
                 st.write(res2.text)
         
