@@ -4,12 +4,18 @@ import google.generativeai as genai
 st.set_page_config(layout="wide")
 st.title("🌍 Global Truth & Pulse Dashboard")
 
-# Sidebar for the Key
+# --- SIDEBAR SETUP ---
 with st.sidebar:
     st.header("🔑 API Setup")
-    gem_key = st.text_input("Gemini Key:", type="password")
-    st.info("Paste your key from AI Studio above.")
+    
+    # This 'key' argument tells Streamlit to remember the input
+    gem_key = st.text_input("Gemini Key:", type="password", key="my_api_key")
+    
+    st.info("Your key is now remembered for this session!")
+    st.markdown("---")
+    st.write("Targeting: Unbiased & Unfiltered News")
 
+# --- MAIN DASHBOARD ---
 topic = st.selectbox("Select Topic:", ["US-Iran Conflict", "Canada-US Trade"])
 
 if st.button("🚀 Update Dashboard"):
@@ -19,9 +25,9 @@ if st.button("🚀 Update Dashboard"):
         try:
             genai.configure(api_key=gem_key)
             
-            # UPDATED: Using the 2.0-flash model which supports 'google_search_retrieval'
+            # Using FLASH-LITE for better reliability on Free Tier
             model = genai.GenerativeModel(
-                model_name='gemini-2.0-flash',
+                model_name='gemini-2.0-flash-lite',
                 tools=[{'google_search_retrieval': {}}]
             )
             
@@ -29,13 +35,18 @@ if st.button("🚀 Update Dashboard"):
             
             with col1:
                 st.subheader("🛡️ Verified Source (Gemini)")
-                res1 = model.generate_content(f"Give me a fact-checked, neutral summary of {topic} as of today.")
-                st.write(res1.text)
+                with st.spinner("Searching official reports..."):
+                    res1 = model.generate_content(f"Provide a fact-checked, neutral summary of {topic} as of today.")
+                    st.write(res1.text)
 
             with col2:
                 st.subheader("🔥 Unfiltered Pulse (Gemini Research)")
-                res2 = model.generate_content(f"Search for raw, on-the-ground reports and unverified rumors regarding {topic} today. Present them clearly but note they are unverified.")
-                st.write(res2.text)
+                with st.spinner("Searching for raw reports..."):
+                    res2 = model.generate_content(f"Search for raw, on-the-ground reports and unverified rumors regarding {topic} today. Present them clearly but note they are unverified.")
+                    st.write(res2.text)
         
         except Exception as e:
-            st.error(f"Something went wrong: {e}")
+            if "429" in str(e):
+                st.error("Too many requests! Please wait 60 seconds and try again.")
+            else:
+                st.error(f"Something went wrong: {e}")
